@@ -23,109 +23,121 @@ It deploys the previously completed [Item Catalog App](https://github.com/megfh/
     Private Key (provided in submission notes)
 
 ## Update and Upgrade all currently installed packages
-  `$ sudo apt-get update`
-  `$ sudo apt-get upgrade`
+  ```
+  sudo apt-get update
+  sudo apt-get upgrade
+  ```
 
 ## Create a new user and give sudo permission
-`sudo adduser grader --disabled-password`
-Create a new file under the suoders directory: `sudo nano /etc/sudoers.d/grader`.
+```sudo adduser grader --disabled-password```
+Create a new file under the suoders directory:
+```sudo nano /etc/sudoers.d/grader```.
 Fill that newly created file with the following line of text: "grader ALL=(ALL) NOPASSWD:ALL", then save it. The grader user now has sudo permission
 
 ## Configure the key-based authentication for grader user
 On your local machine, use `ssh-keygen` to generate an encryption key and save it as ~/.ssh/graderKey
-`sudo su - grader
-`mkdir .ssh`
-`chmod 700 .ssh`
-`touch .ssh/authorized_keys`
-`chmod 600 .ssh/authorized_keys`
-`nano .ssh/authorized_keys`
+```
+sudo su - grader
+mkdir .ssh
+chmod 700 .ssh
+touch .ssh/authorized_keys
+chmod 600 .ssh/authorized_keys
+nano .ssh/authorized_keys
+```
 Paste the public key for your key pair you created into the file
 Now to login remotely as grader:
-`ssh -i ~/.ssh/graderKey grader@13.59.81.129`
+```ssh -i ~/.ssh/graderKey grader@13.59.81.129```
 [Source: Managing User Accounts on Your Linux Instance](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/managing-users.html)
 
 ## Configure the local timezone to UTC
 Open time configuration dialog and set it to UTC
-`sudo dpkg-reconfigure tzdata`
+```sudo dpkg-reconfigure tzdata```
 
 ## Enforce key-based authentication
 `sudo nano /etc/ssh/sshd_config` Find the PasswordAuthentication line and edit it to no.
-`sudo service ssh restart`
+```sudo service ssh restart```
 
 ## Change the SSH port from 22 to 2200
 `sudo nano /etc/ssh/sshd_config` Find the Port line and edit it to 2200.
-`sudo service ssh restart`
+```sudo service ssh restart```
 *note: port 2200 must also be allowed under the Firewall settings in the AWS Lightsail Console
-Now you are able to log into the remote VM through ssh with the following command: $ ssh -i ~/.ssh/graderKey -p 2200 grader@13.59.81.129.
+Now you are able to log into the remote VM through ssh with the following command:
+```ssh -i ~/.ssh/graderKey -p 2200 grader@13.59.81.129```
 
 ## Disable ssh login for root user
-`sudo nano /etc/ssh/sshd_config`
+```sudo nano /etc/ssh/sshd_config```
 Find the PermitRootLogin line and edit it to no.
-`sudo service ssh restart`
+```sudo service ssh restart```
 
 ## Configure the Uncomplicated Firewall (UFW)
 Configure the Uncomplicated Firewall (UFW) to only allow incoming connections for SSH (port 2200), HTTP (port 80), and NTP (port 123)
-`sudo ufw allow 2200/tcp`
-`sudo ufw allow 80/tcp`
-`sudo ufw allow 123/udp`
-`sudo ufw enable`
+```
+sudo ufw allow 2200/tcp
+sudo ufw allow 80/tcp
+sudo ufw allow 123/udp
+sudo ufw enable
+```
 
 ## Automatically manage package updates
 Install unattended-upgrades if not already installed:
-`sudo apt-get install unattended-upgrades`
+```sudo apt-get install unattended-upgrades```
 To enable it, do:
-`sudo dpkg-reconfigure --priority=low unattended-upgrades`
+```sudo dpkg-reconfigure --priority=low unattended-upgrades```
 [Source: DigitalOcean](https://www.digitalocean.com/community/questions/auto-upgrade-packages-on-ubuntu)
 
 
 ## Install and configure Apache to serve a Python mod_wsgi application
 Install Apache web server:
-`sudo apt-get install apache2`
+```sudo apt-get install apache2```
 Install mod_wsgi for serving Python apps from Apache and the helper package python-setuptools:
-`sudo apt-get install python-setuptools libapache2-mod-wsgi`
+```sudo apt-get install python-setuptools libapache2-mod-wsgi```
 Restart the Apache server for mod_wsgi to load:
-`sudo service apache2 restart`
+```sudo service apache2 restart```
 Extend Python with additional packages that enable Apache to serve Flask applications:
-`sudo apt-get install libapache2-mod-wsgi python-dev`
+```sudo apt-get install libapache2-mod-wsgi python-dev```
 Enable mod_wsgi (if not already enabled):
-`sudo a2enmod wsgi`
+```sudo a2enmod wsgi```
 
 ## Install Git
-`sudo apt-get install git`
+```sudo apt-get install git```
 Configure your username:
-`git config --global user.name <username>`
+```git config --global user.name <username>```
 Configure your email:
-`git config --global user.email <email>`
+```git config --global user.email <email>```
 
 ## Clone the Catalog app from github
-`cd /var/www`
-`sudo mkdir catalog`
-`sudo chown -R grader:grader catalog`
-`cd catalog`
-`git clone https://github.com/megfh/Item-Catalog catalog`
+```
+cd /var/www
+sudo mkdir catalog
+sudo chown -R grader:grader catalog
+cd catalog
+git clone https://github.com/megfh/Item-Catalog catalog
+```
 *Note: Some tweaks were needed to deploy the item catalog app, so I made a deployment branch which slightly differs from the master* Move inside the repository
-`cd /var/www/catalog/catalog`
+```cd /var/www/catalog/catalog```
 and change branch with:
-`git checkout deployment`
+```git checkout deployment```
 
 
 ## Setting up Flask & the virtual environment
 Rename application.py to __init__.py
-`sudo mv application.py __init__.py`
-`sudo apt-get install python-pip`
-`sudo apt-get install python-virtualenv`
-`cd /var/www/catalog`
-`sudo virtualenv venv`
-`source venv/bin/activate`
-`sudo chmod -R 777 venv`
-`pip install Flask`
+```
+sudo mv application.py __init__.py
+sudo apt-get install python-pip
+sudo apt-get install python-virtualenv
+cd /var/www/catalog
+sudo virtualenv venv
+source venv/bin/activate
+sudo chmod -R 777 venv
+pip install Flask
+```
 Install all other project dependencies:
-`pip install sqlalchemy oauth2client httplib2 requests`
-`pip install psycopg2`
+```pip install sqlalchemy oauth2client httplib2 requests```
+```pip install psycopg2```
 
 ## Configure and enable a new virtual host
 Create a virtual host conifg file:
-`sudo nano /etc/apache2/sites-available/catalog.conf`
+```sudo nano /etc/apache2/sites-available/catalog.conf```
 Paste in the following:
 ```
 <VirtualHost *:80>
@@ -148,7 +160,7 @@ Paste in the following:
 </VirtualHost>
 ```
 Enable the new virtual host:
-`sudo a2ensite catalog`
+```sudo a2ensite catalog```
 
 Create wsgi file:
 `cd /var/www/catalog` and
@@ -168,11 +180,13 @@ application.secret_key = 'Your secret key'
 [Source: DigitalOcean](https://www.digitalocean.com/community/tutorials/how-to-deploy-a-flask-application-on-an-ubuntu-vps)
 
 ## Install and configure PostgreSQL
-`sudo apt-get update`
-`sudo apt-get install libpq-dev python-dev`
-`sudo apt-get install postgresql postgresql-contrib`
+```
+sudo apt-get update
+sudo apt-get install libpq-dev python-dev
+sudo apt-get install postgresql postgresql-contrib
+```
 Double check that no remote connections are allowed
-`sudo nano /etc/postgresql/9.5/main/pg_hba.conf`
+```sudo nano /etc/postgresql/9.5/main/pg_hba.conf```
 ```
 local   all             postgres                                peer
 local   all             all                                     peer
@@ -180,8 +194,8 @@ host    all             all             127.0.0.1/32            md5
 host    all             all             ::1/128                 md5
 ```
 Configure the new catalog user and database
-`sudo su - postgres`
-`psql`
+```sudo su - postgres```
+```psql```
 ```
 # CREATE USER catalog WITH PASSWORD 'somepassword';
 # ALTER USER catalog CREATEDB;
@@ -191,13 +205,13 @@ Configure the new catalog user and database
 # GRANT ALL ON SCHEMA public TO catalog;
 ```
 Exit out of PostgreSQl and the postgres user:
-`# \q, then $ exit`
+`# \q' then `exit`
 
 Inside the Flask application (and database_setup.py), the database connection is now performed with:
 engine = create_engine('postgresql://catalog:somepassword@localhost/catalog')
 
 Create postgreSQL database schema:
-`python database_setup.py`
+```python database_setup.py```
 [Source: DigitalOcean](https://www.digitalocean.com/community/tutorials/how-to-secure-postgresql-on-an-ubuntu-vps)
 
 ## Get O-Auth Login Working
@@ -209,7 +223,7 @@ add your host name and public IP-address to your Authorized JavaScript origins a
 Make sure to update the client_secrets.json file in your catalog directory accordingly
 
 Restart Apache to launch the app
-`sudo service apache2 restart`
+```sudo service apache2 restart```
 
 
 Credits:
