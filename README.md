@@ -5,7 +5,7 @@ This project was completed as part of the Udacity FSND Program.
 In this project, we take a baseline installation of a Linux distribution on a virtual machine and prepare it to host web applications, to include installing updates, securing it from a number of attack vectors and installing/configuring web and database servers.
 It deploys the previously completed [Item Catalog App](https://github.com/megfh/Item-Catalog).
 
-The deployed project can be found [here](http://ec2-13-59-81-129.us-east-2.compute.amazonaws.com/)
+*this project is no longer publicly available*
 
 
 ## Instructions for SSH access to the instance
